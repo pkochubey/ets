@@ -42,30 +42,52 @@ struct sis_header
 static void sis_header_read( struct sis_header * self, FILE * stream )
 {
   static const char SIS_MAGIC[4] = "SIS";
+  //same for all ETS in all test files
   fread( self->magic, 1, sizeof(self->magic), stream );
   assert( strncmp( self->magic, SIS_MAGIC, 4 ) == 0 );
+  //same for all ETS in all test files
   fread( (char*)&self->nbytes, 1, sizeof(self->nbytes), stream );
   assert( self->nbytes == 64 ); // size of struct
+  //same for all ETS in all test files
   fread( (char*)&self->version, 1, sizeof(self->version), stream );
   assert( self->version == 2 ); // version ??
+
+  //variable
   fread( (char*)&self->dim, 1, sizeof(self->dim), stream );
   assert( self->dim == 4 || self->dim == 6 ); // dim ?
+
+  //same for all ETS in all test files
   fread( (char*)&self->etsoffset, 1, sizeof(self->etsoffset), stream );
   assert( self->etsoffset == 64 ); // offset of ETS struct
+  //same for all ETS in all test files
   fread( (char*)&self->etsnbytes, 1, sizeof(self->etsnbytes), stream );
   assert( self->etsnbytes == 228 ); // size of ETS struct
+  //same for all ETS in all test files
   fread( (char*)&self->dummy0, 1, sizeof(self->dummy0), stream );
   assert( self->dummy0 == 0 ); // ??
+
+  //variable
   fread( (char*)&self->offsettiles, 1, sizeof(self->offsettiles), stream ); // offset to tiles
+  //variable
   fread( (char*)&self->ntiles, 1, sizeof(self->ntiles), stream ); // number of tiles
-  fread( (char*)&self->dummy1, 1, sizeof(self->dummy1), stream ); // ??
-  assert( self->dummy1 == 0 ); // always zero ?
+
+  //same for all ETS in all test files
+  fread( (char*)&self->dummy1, 1, sizeof(self->dummy1), stream );
+  assert( self->dummy1 == 0 );
+
+  //variable
   fread( (char*)&self->dummy2, 1, sizeof(self->dummy2), stream ); // some kind of offset ?
   //assert( dummy2 == 0 ); // not always
+
+  //same for all ETS in all test files
   fread( (char*)&self->dummy3, 1, sizeof(self->dummy3), stream );
   assert( self->dummy3 == 0 ); // always zero ?
+
+  //variable
   fread( (char*)&self->dummy4, 1, sizeof(self->dummy4), stream );
   //assert( dummy4 == 0 ); // not always
+
+  //same for all ETS in all test files
   fread( (char*)&self->dummy5, 1, sizeof(self->dummy5), stream );
   assert( self->dummy5 == 0 ); // always zero ?
 }
@@ -116,12 +138,12 @@ static void ets_header_read( struct ets_header * self, FILE * stream )
   fread( (char*)&self->dummy3, 1, sizeof(self->dummy3), stream );
   assert( self->dummy3 == 4 || self->dummy3 == 1 );
   fread( (char*)&self->compression, 1, sizeof(self->compression), stream ); // codec
-  // 0 -> ?
+  // 0 -> RAW
   // 2 -> JPEG ?
   // 3 -> JPEG 2000 ?
   assert( self->compression == 2 || self->compression == 3 || self->compression == 0 );
   fread( (char*)&self->quality, 1, sizeof(self->quality), stream );
-  assert( self->quality == 90 || self->quality == 100 ); // some kind of JPEG quality ?
+  assert( self->quality == 90 || self->quality == 100 ); // some kind of JPEG quality ? Always 100 if RAW
   fread( (char*)&self->dimx, 1, sizeof(self->dimx), stream );
   //assert( self->dimx == 512 ); // always tile of 512x512 ?
   fread( (char*)&self->dimy, 1, sizeof(self->dimy), stream );
@@ -290,7 +312,7 @@ int main(int argc, char *argv[])
       assert( t->level == 0 );
       if( t->level == 0 )
         {
-        tile_print( t, stdout );
+        //tile_print( t, stdout );
         fseek( stream, t->offset, SEEK_SET );
         buffer = realloc(buffer, t->numbytes );
         fread( buffer, 1, t->numbytes, stream );
