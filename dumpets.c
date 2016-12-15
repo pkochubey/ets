@@ -15,11 +15,20 @@
  *
  * Warning: it will generate tons of *.jpg file in current working directory
  */
+
+/*
+ * Note : dim may be 5 !
+ * For dim == 5 or 6, dimx is >> 512. True dimx or or dimx is shifted if dim != 4 ?
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+
+
 
 struct sis_header
 {
@@ -41,59 +50,72 @@ struct sis_header
 
 static void sis_header_read( struct sis_header * self, FILE * stream )
 {
+  // ---- same for all ETS in all test files ----
   static const char SIS_MAGIC[4] = "SIS";
-  //same for all ETS in all test files
   fread( self->magic, 1, sizeof(self->magic), stream );
   assert( strncmp( self->magic, SIS_MAGIC, 4 ) == 0 );
-  //same for all ETS in all test files
+  // ---- same for all ETS in all test files ----
+//headerSize... useful ?
   fread( (char*)&self->nbytes, 1, sizeof(self->nbytes), stream );
   assert( self->nbytes == 64 ); // size of struct
-  //same for all ETS in all test files
+  // ---- same for all ETS in all test files ----
+//version
   fread( (char*)&self->version, 1, sizeof(self->version), stream );
   assert( self->version == 2 ); // version ??
 
-  //variable
+
+//nbDim
   fread( (char*)&self->dim, 1, sizeof(self->dim), stream );
   assert( self->dim == 4 || self->dim == 6 ); // dim ?
 
-  //same for all ETS in all test files
+
+  // ---- same for all ETS in all test files ----
+//additionalHeaderOffset
   fread( (char*)&self->etsoffset, 1, sizeof(self->etsoffset), stream );
   assert( self->etsoffset == 64 ); // offset of ETS struct
-  //same for all ETS in all test files
+  // ---- same for all ETS in all test files ----
+//additionalHeaderSize
   fread( (char*)&self->etsnbytes, 1, sizeof(self->etsnbytes), stream );
   assert( self->etsnbytes == 228 ); // size of ETS struct
-  //same for all ETS in all test files
+  // ---- same for all ETS in all test files ----
+//truly dummy ???
   fread( (char*)&self->dummy0, 1, sizeof(self->dummy0), stream );
-  assert( self->dummy0 == 0 ); // ??
+  assert( self->dummy0 == 0 ); // always 0 !!
 
-  //variable
+
+//usedChunkOffset ==> index in the stream where tiles begin !
   fread( (char*)&self->offsettiles, 1, sizeof(self->offsettiles), stream ); // offset to tiles
-  //variable
+//nUsedChunks
   fread( (char*)&self->ntiles, 1, sizeof(self->ntiles), stream ); // number of tiles
 
-  //same for all ETS in all test files
+
+  // ---- same for all ETS in all test files ----
+//truly dummy ???
   fread( (char*)&self->dummy1, 1, sizeof(self->dummy1), stream );
-  assert( self->dummy1 == 0 );
+  assert( self->dummy1 == 0 ); // always zero !!
 
-  //variable
+
   fread( (char*)&self->dummy2, 1, sizeof(self->dummy2), stream ); // some kind of offset ?
-  //assert( dummy2 == 0 ); // not always
+  //assert( dummy2 == 0 ); // not always...
 
-  //same for all ETS in all test files
+
+  // ---- same for all ETS in all test files ----
   fread( (char*)&self->dummy3, 1, sizeof(self->dummy3), stream );
-  assert( self->dummy3 == 0 ); // always zero ?
+  assert( self->dummy3 == 0 ); // always zero !!!
 
-  //variable
+
   fread( (char*)&self->dummy4, 1, sizeof(self->dummy4), stream );
-  //assert( dummy4 == 0 ); // not always
+  //assert( dummy4 == 0 ); // not always...
 
-  //same for all ETS in all test files
+
+  // ---- same for all ETS in all test files ----
   fread( (char*)&self->dummy5, 1, sizeof(self->dummy5), stream );
-  assert( self->dummy5 == 0 ); // always zero ?
+  assert( self->dummy5 == 0 ); // always zero !!!
 }
 
 static void sis_header_print( struct sis_header * self, FILE * stream )
 {
+  fprintf( stream, "sis_header_print : BEGIN\n" );
   fprintf( stream, "magic : %s\n"  , self->magic );
   fprintf( stream, "nbytes: %d\n"  , self->nbytes );
   fprintf( stream, "versi : %d\n"  , self->version );
@@ -108,6 +130,8 @@ static void sis_header_print( struct sis_header * self, FILE * stream )
   fprintf( stream, "dummy3: %d\n"  , self->dummy3 );
   fprintf( stream, "dummy4: %d\n"  , self->dummy4 );
   fprintf( stream, "dummy5: %d\n"  , self->dummy5 );
+  fprintf( stream, "sis_header_print : END\n" );
+  fprintf( stream, "=======================\n" );
 }
 
 struct ets_header
@@ -132,24 +156,32 @@ static void ets_header_read( struct ets_header * self, FILE * stream )
   fread( (char*)&self->version, 1, sizeof(self->version), stream );
   assert( self->version == 0x30001 || self->version == 0x30003 ); // some kind of version ?
   fread( (char*)&self->dummy1, 1, sizeof(self->dummy1), stream );
-  assert( self->dummy1 == 2 || self->dummy1 == 4 /* when sis_header->dim == 4 */ );
+  assert( self->dummy1 == 2 || self->dummy1 == 4 /* when sis_header->dim == 6 */ );
   fread( (char*)&self->dummy2, 1, sizeof(self->dummy2), stream );
   assert( self->dummy2 == 3 || self->dummy2 == 1 );
   fread( (char*)&self->dummy3, 1, sizeof(self->dummy3), stream );
   assert( self->dummy3 == 4 || self->dummy3 == 1 );
+
+//compressionType
   fread( (char*)&self->compression, 1, sizeof(self->compression), stream ); // codec
   // 0 -> RAW
   // 2 -> JPEG ?
   // 3 -> JPEG 2000 ?
   assert( self->compression == 2 || self->compression == 3 || self->compression == 0 );
+//compressionQuality
   fread( (char*)&self->quality, 1, sizeof(self->quality), stream );
-  assert( self->quality == 90 || self->quality == 100 ); // some kind of JPEG quality ? Always 100 if RAW
+  assert( self->quality == 90 || self->quality == 100 ); // some kind of JPEG quality ?
+//tileX
   fread( (char*)&self->dimx, 1, sizeof(self->dimx), stream );
-  //assert( self->dimx == 512 ); // always tile of 512x512 ?
+  assert( self->dimx == 512 ); // always tile of 512x512 ?
+//tileY
   fread( (char*)&self->dimy, 1, sizeof(self->dimy), stream );
-  //assert( self->dimy == 512 ); //
+  assert( self->dimy == 512 ); //
+//tileZ
   fread( (char*)&self->dimz, 1, sizeof(self->dimz), stream );
   assert( self->dimz == 1 ); // dimz ?
+
+
 }
 static const char *ets_header_getcomp( struct ets_header * self)
 {
@@ -161,6 +193,7 @@ static const char *ets_header_getcomp( struct ets_header * self)
 }
 static void ets_header_print( struct ets_header * self, FILE * stream )
 {
+  fprintf( stream, "ets_header_print : BEGIN\n" );
   fprintf( stream, "magic : %s\n", self->magic );
   fprintf( stream, "versio: %d\n", self->version );
   fprintf( stream, "dummy1: %d\n", self->dummy1 );
@@ -171,6 +204,9 @@ static void ets_header_print( struct ets_header * self, FILE * stream )
   fprintf( stream, "dimx  : %d\n", self->dimx );
   fprintf( stream, "dimy  : %d\n", self->dimy );
   fprintf( stream, "dimz  : %d\n", self->dimz );
+
+  fprintf( stream, "ets_header_print : END\n" );
+  fprintf( stream, "=======================\n" );
 }
 
 struct tile
@@ -222,8 +258,8 @@ static const struct tile *findtile( struct tile *tiles, size_t ntiles, const uin
         {
         ret = t;
         }
-      }
     }
+  }
   return ret;
 }
 
@@ -259,6 +295,7 @@ int main(int argc, char *argv[])
     tiles[n] = t;
     }
 
+
   // computes tiles dims
   uint32_t tilexmax = 0;
   uint32_t tileymax = 0;
@@ -269,7 +306,7 @@ int main(int argc, char *argv[])
     if( t->level == 0 )
       {
       tilexmax = std_max( t->coord[0], tilexmax );
-      tileymax = std_max( t->coord[1], tileymax );
+      tileymax = std_max( ((int)t->coord[1]), ((int)tileymax) );
       }
     }
   //assert( tilexmax + 1 == 34 );
