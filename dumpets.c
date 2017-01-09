@@ -61,7 +61,7 @@ static void sis_header_read( struct sis_header * self, FILE * stream )
   // ---- same for all ETS in all test files ----
 //version
   fread( (char*)&self->version, 1, sizeof(self->version), stream );
-  assert( self->version == 2 ); // version ??
+  assert( self->version == 2 );
 
 
 //nbDim
@@ -146,6 +146,16 @@ struct ets_header
 /* 4 */uint32_t dimx;
 /* 4 */uint32_t dimy;
 /* 4 */uint32_t dimz;
+/* 8 */uint64_t dummy4;
+/* 8 */uint64_t dummy5;
+/* 8 */uint64_t dummy6;
+/* 8 */uint64_t dummy7;
+/* 8 */uint64_t dummy8;
+/* 8 */uint64_t dummy9;
+/* 8 */uint64_t dummy10;
+/* 8 */uint64_t dummy11;
+/* 4 */uint32_t dummy12;
+/* 4 */uint32_t dummy13;
 };
 
 static void ets_header_read( struct ets_header * self, FILE * stream )
@@ -173,15 +183,70 @@ static void ets_header_read( struct ets_header * self, FILE * stream )
   assert( self->quality == 90 || self->quality == 100 ); // some kind of JPEG quality ?
 //tileX
   fread( (char*)&self->dimx, 1, sizeof(self->dimx), stream );
-  assert( self->dimx == 512 ); // always tile of 512x512 ?
+  //assert( self->dimx == 512 ); // not always tile of 512x512 ?
 //tileY
   fread( (char*)&self->dimy, 1, sizeof(self->dimy), stream );
-  assert( self->dimy == 512 ); //
+  //assert( self->dimy == 512 ); //
 //tileZ
   fread( (char*)&self->dimz, 1, sizeof(self->dimz), stream );
   assert( self->dimz == 1 ); // dimz ?
 
+  fread( (char*)&self->dummy4, 1, sizeof(self->dummy4), stream );
+  assert( self->dummy4 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy5, 1, sizeof(self->dummy5), stream );
+  assert( self->dummy5 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy6, 1, sizeof(self->dummy6), stream );
+  assert( self->dummy6 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy7, 1, sizeof(self->dummy7), stream );
+  assert( self->dummy7 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy8, 1, sizeof(self->dummy8), stream );
+  assert( self->dummy8 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy9, 1, sizeof(self->dummy9), stream );
+  assert( self->dummy9 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy10, 1, sizeof(self->dummy10), stream );
+  assert( self->dummy10 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy11, 1, sizeof(self->dummy11), stream );
+  assert( self->dummy11 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy12, 1, sizeof(self->dummy12), stream );
+  assert( self->dummy12 == 0 ); // always zero !!!
+  fread( (char*)&self->dummy13, 1, sizeof(self->dummy13), stream );
+  assert( self->dummy13 == 16777215 ); // always !!!
 
+  uint32_t dummyagain;
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 ); // always zero !!!
+
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 || dummyagain == 1 );
+  fread( (char*)&dummyagain, 1, sizeof(dummyagain), stream );
+  fprintf( stdout, "dummyagain: %d\n", dummyagain );
+  assert( dummyagain == 0 || dummyagain == 1 );
 }
 static const char *ets_header_getcomp( struct ets_header * self)
 {
@@ -204,6 +269,16 @@ static void ets_header_print( struct ets_header * self, FILE * stream )
   fprintf( stream, "dimx  : %d\n", self->dimx );
   fprintf( stream, "dimy  : %d\n", self->dimy );
   fprintf( stream, "dimz  : %d\n", self->dimz );
+  fprintf( stream, "dummy4: %ld\n", self->dummy4 );
+  fprintf( stream, "dummy5: %ld\n", self->dummy5 );
+  fprintf( stream, "dummy6: %ld\n", self->dummy6 );
+  fprintf( stream, "dummy7: %ld\n", self->dummy7 );
+  fprintf( stream, "dummy8: %ld\n", self->dummy8 );
+  fprintf( stream, "dummy9: %ld\n", self->dummy9 );
+  fprintf( stream, "dummy10: %ld\n", self->dummy10 );
+  fprintf( stream, "dummy11: %ld\n", self->dummy11 );
+  fprintf( stream, "dummy12: %d\n", self->dummy12 );
+  fprintf( stream, "dummy13: %d\n", self->dummy13 );
 
   fprintf( stream, "ets_header_print : END\n" );
   fprintf( stream, "=======================\n" );
